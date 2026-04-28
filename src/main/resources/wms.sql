@@ -106,6 +106,13 @@ INSERT INTO stock(goods_id, quantity, safe_stock) VALUES
                                                       (20, 140, 30);
 
 
+# 插入用户数据
+INSERT INTO user(username, password, role) VALUES
+                                              ('admin', '123456', 'ADMIN'),
+                                              ('warehouse', '123456', 'WAREHOUSE'),
+                                              ('sales', '123456', 'SALES');
+
+
 INSERT INTO inbound(goods_id, quantity, operator) VALUES
                                                       (1, 50, 'admin'),
                                                       (2, 30, 'admin'),

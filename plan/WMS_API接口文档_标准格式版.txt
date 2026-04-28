@@ -1,0 +1,135 @@
+仓储管理系统接口文档（WMS API）
+1 商品管理模块
+1.1 商品列表查询
+请求路径：/goods
+请求方式：GET
+接口描述：查询商品列表（支持分页/条件查询）
+请求参数：name, category, page, pageSize
+响应示例：
+{"code":1,"msg":"success","data":{"total":1,"rows":[]}}
+1.2 新增商品
+请求路径：/goods
+请求方式：POST
+接口描述：新增商品信息
+请求参数：{"name":"","category":"","brand":"","price":0,"unit":""}
+响应示例：
+{"code":1,"msg":"success","data":null}
+1.3 删除商品
+请求路径：/goods
+请求方式：DELETE
+接口描述：根据ID删除商品
+请求参数：id
+响应示例：
+{"code":1,"msg":"success","data":null}
+1.4 商品详情查询
+请求路径：/goods/{id}
+请求方式：GET
+接口描述：根据ID查询商品详情
+请求参数：id
+响应示例：
+{"code":1,"msg":"success","data":{}}
+1.5 修改商品
+请求路径：/goods
+请求方式：PUT
+接口描述：修改商品信息
+请求参数：{"id":0,"name":"","category":"","brand":"","price":0,"unit":""}
+响应示例：
+{"code":1,"msg":"success","data":null}
+2 库存管理模块
+2.1 库存查询
+请求路径：/stock
+请求方式：GET
+接口描述：查询库存列表
+请求参数：goodsName, lowStock
+响应示例：
+{"code":1,"msg":"success","data":[]}
+2.2 库存更新
+请求路径：/stock/update
+请求方式：POST
+接口描述：更新库存数量（入库/出库内部调用）
+请求参数：{"goodsId":0,"changeNum":0}
+响应示例：
+{"code":1,"msg":"success","data":null}
+2.3 设置安全库存
+请求路径：/stock/safe
+请求方式：PUT
+接口描述：设置商品安全库存阈值
+请求参数：{"goodsId":0,"safeStock":0}
+响应示例：
+{"code":1,"msg":"success","data":null}
+3 入库管理模块
+3.1 新增入库
+请求路径：/inbound
+请求方式：POST
+接口描述：新增入库记录并增加库存
+请求参数：{"goodsId":0,"quantity":0,"operator":""}
+响应示例：
+{"code":1,"msg":"success","data":null}
+3.2 入库记录查询
+请求路径：/inbound
+请求方式：GET
+接口描述：查询入库记录
+请求参数：goodsName,page,pageSize
+响应示例：
+{"code":1,"msg":"success","data":[]}
+4 出库管理模块
+4.1 新增出库
+请求路径：/outbound
+请求方式：POST
+接口描述：新增出库记录并减少库存
+请求参数：{"goodsId":0,"quantity":0,"receiver":""}
+响应示例：
+{"code":1,"msg":"success","data":null}
+4.2 出库记录查询
+请求路径：/outbound
+请求方式：GET
+接口描述：查询出库记录
+请求参数：goodsName,page,pageSize
+响应示例：
+{"code":1,"msg":"success","data":[]}
+5 统计分析模块
+5.1 库存统计
+请求路径：/statistics/stock
+请求方式：GET
+接口描述：统计库存总体数据
+请求参数：无
+响应示例：
+{"code":1,"msg":"success","data":{"totalGoods":0,"totalStock":0}}
+5.2 出入库统计
+请求路径：/statistics/io
+请求方式：GET
+接口描述：统计出入库数据
+请求参数：无
+响应示例：
+{"inboundTotal":0,"outboundTotal":0}
+6 用户管理模块
+6.1 用户登录
+请求路径：/login
+请求方式：POST
+接口描述：用户登录获取token
+请求参数：{"username":"","password":""}
+响应示例：
+{"code":1,"msg":"success","data":{"token":""}}
+7 库存预警模块
+7.1 低库存查询
+请求路径：/warning/low-stock
+请求方式：GET
+接口描述：查询低于安全库存的商品
+请求参数：page,pageSize
+响应示例：
+{"code":1,"msg":"success","data":[]}
+8 日志管理模块
+8.1 日志查询
+请求路径：/logs
+请求方式：GET
+接口描述：查询系统操作日志
+请求参数：username,type,page,pageSize
+响应示例：
+{"code":1,"msg":"success","data":[]}
+8.2 新增日志
+请求路径：/logs
+请求方式：POST
+接口描述：记录系统操作日志
+请求参数：{"username":"","operation":"","content":""}
+响应示例：
+{"code":1,"msg":"success","data":null}
