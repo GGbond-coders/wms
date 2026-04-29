@@ -5,7 +5,11 @@ import com.wms.service.InboundService;
 import com.wms.vo.PageVO;
 import com.wms.vo.ResultVO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/inbound")
@@ -24,8 +28,12 @@ public class InboundController {
     }
 
     @PostMapping
-    public ResultVO<Void> addInbound(@RequestParam Long goodsId, @RequestParam Integer quantity, @RequestParam String operator) {
-        boolean result = inboundService.addInbound(goodsId, quantity, operator);
+    public ResultVO<Void> addInbound(
+            @RequestParam Long goodsId,
+            @RequestParam Integer quantity,
+            @RequestParam Long operatorId) {
+        boolean result = inboundService.addInbound(goodsId, quantity, operatorId);
         return result ? ResultVO.success() : ResultVO.error("入库失败");
     }
 }
+

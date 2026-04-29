@@ -5,7 +5,11 @@ import com.wms.service.OutboundService;
 import com.wms.vo.PageVO;
 import com.wms.vo.ResultVO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/outbound")
@@ -24,8 +28,12 @@ public class OutboundController {
     }
 
     @PostMapping
-    public ResultVO<Void> addOutbound(@RequestParam Long goodsId, @RequestParam Integer quantity, @RequestParam String receiver) {
-        boolean result = outboundService.addOutbound(goodsId, quantity, receiver);
-        return result ? ResultVO.success() : ResultVO.error("出库失败，库存不足");
+    public ResultVO<Void> addOutbound(
+            @RequestParam Long goodsId,
+            @RequestParam Integer quantity,
+            @RequestParam Long operatorId,
+            @RequestParam String receiver) {
+        boolean result = outboundService.addOutbound(goodsId, quantity, operatorId, receiver);
+        return result ? ResultVO.success() : ResultVO.error("outbound failed: insufficient stock");
     }
 }

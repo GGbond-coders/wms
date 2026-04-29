@@ -5,9 +5,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wms.mapper.GoodsMapper;
 import com.wms.mapper.OutboundMapper;
 import com.wms.mapper.StockMapper;
+import com.wms.mapper.UserMapper;
 import com.wms.pojo.Goods;
 import com.wms.pojo.Outbound;
 import com.wms.pojo.Stock;
+import com.wms.pojo.User;
+import com.wms.service.AuditLogService;
 import com.wms.service.OutboundService;
 import com.wms.service.StockService;
 import com.wms.vo.PageVO;
@@ -32,11 +35,16 @@ public class OutboundServiceImpl implements OutboundService {
     @Autowired
     private StockService stockService;
 
+    @Autowired
+    private UserMapper userMapper;
+
+    @Autowired
+    private AuditLogService auditLogService;
+
     @Override
     public PageVO<Outbound> getOutboundList(String goodsName, Integer page, Integer pageSize) {
         QueryWrapper<Outbound> wrapper = new QueryWrapper<>();
         if (goodsName != null && !goodsName.isEmpty()) {
-            // 通过商品名称找到商品ID
             QueryWrapper<Goods> goodsWrapper = new QueryWrapper<>();
             goodsWrapper.like("name", goodsName);
             List<Goods> goodsList = goodsMapper.selectList(goodsWrapper);
@@ -46,6 +54,7 @@ public class OutboundServiceImpl implements OutboundService {
             }
         }
         wrapper.orderByDesc("create_time");
+
         Page<Outbound> pageResult = outboundMapper.selectPage(new Page<>(page, pageSize), wrapper);
         PageVO<Outbound> pageVO = new PageVO<>();
         pageVO.setTotal(pageResult.getTotal());
@@ -55,30 +64,33 @@ public class OutboundServiceImpl implements OutboundService {
 
     @Override
     @Transactional
-    public boolean addOutbound(Long goodsId, Integer quantity, String receiver) {
-        // 检查库存是否足够
+    public boolean addOutbound(Long goodsId, Integer quantity, Long operatorId, String receiver) {
+        User operator = userMapper.selectById(operatorId);
+        if (operator == null) {
+            return false;
+        }
         QueryWrapper<Stock> stockWrapper = new QueryWrapper<>();
         stockWrapper.eq("goods_id", goodsId);
         Stock stock = stockMapper.selectOne(stockWrapper);
         if (stock == null || stock.getQuantity() < quantity) {
-            return false; // 库存不足
+            return false;
         }
 
-        // 创建出库记录
         Outbound outbound = new Outbound();
         outbound.setGoodsId(goodsId);
         outbound.setQuantity(quantity);
+        outbound.setOperatorId(operatorId);
         outbound.setReceiver(receiver);
         int result = outboundMapper.insert(outbound);
 
-        // 更新库存（减少）
         boolean stockResult = stockService.updateStock(goodsId, -quantity);
-
-        // 记录操作日志
-        // Goods goods = goodsMapper.selectById(goodsId);
-        // String content = "出库商品: " + (goods != null ? goods.getName() : "未知") + ", 数量: " + quantity + ", 接收方: " + receiver;
-        // operationLogService.addLog(receiver, "出库", content);
-
-        return result > 0 && stockResult;
+        boolean ok = result > 0 && stockResult;
+        if (ok) {
+            Goods goods = goodsMapper.selectById(goodsId);
+            String name = goods != null ? goods.getName() : "";
+            auditLogService.log("OUTBOUND_CREATE",
+                    "outbound goodsId=" + goodsId + ", name=" + name + ", qty=" + quantity + ", operatorId=" + operatorId + ", receiver=" + receiver);
+        }
+        return ok;
     }
 }

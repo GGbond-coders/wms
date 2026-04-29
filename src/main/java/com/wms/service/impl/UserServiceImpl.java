@@ -7,6 +7,8 @@ import com.wms.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -20,4 +22,12 @@ public class UserServiceImpl implements UserService {
         wrapper.eq("password", password);
         return userMapper.selectOne(wrapper);
     }
+
+    @Override
+    public List<User> listUsers() {
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        wrapper.orderByAsc("id");
+        return userMapper.selectList(wrapper);
+    }
 }
+

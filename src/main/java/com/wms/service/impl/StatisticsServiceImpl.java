@@ -3,6 +3,7 @@ package com.wms.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.wms.mapper.InboundMapper;
 import com.wms.mapper.OutboundMapper;
+import com.wms.mapper.StatisticsMapper;
 import com.wms.mapper.StockMapper;
 import com.wms.pojo.Inbound;
 import com.wms.pojo.Outbound;
@@ -27,20 +28,19 @@ public class StatisticsServiceImpl implements StatisticsService {
     @Autowired
     private OutboundMapper outboundMapper;
 
+    @Autowired
+    private StatisticsMapper statisticsMapper;
+
     @Override
     public Map<String, Object> getStockStatistics() {
         Map<String, Object> result = new HashMap<>();
 
-        // 商品总数
         long totalGoods = stockMapper.selectCount(null);
-
-        // 库存总量
         List<Stock> stocks = stockMapper.selectList(null);
         int totalStock = stocks.stream().mapToInt(Stock::getQuantity).sum();
 
         result.put("totalGoods", totalGoods);
         result.put("totalStock", totalStock);
-
         return result;
     }
 
@@ -48,19 +48,27 @@ public class StatisticsServiceImpl implements StatisticsService {
     public Map<String, Object> getIOStatistics() {
         Map<String, Object> result = new HashMap<>();
 
-        // 入库总量
-        QueryWrapper<Inbound> inboundWrapper = new QueryWrapper<>();
-        List<Inbound> inbounds = inboundMapper.selectList(inboundWrapper);
+        List<Inbound> inbounds = inboundMapper.selectList(new QueryWrapper<>());
         int inboundTotal = inbounds.stream().mapToInt(Inbound::getQuantity).sum();
 
-        // 出库总量
-        QueryWrapper<Outbound> outboundWrapper = new QueryWrapper<>();
-        List<Outbound> outbounds = outboundMapper.selectList(outboundWrapper);
+        List<Outbound> outbounds = outboundMapper.selectList(new QueryWrapper<>());
         int outboundTotal = outbounds.stream().mapToInt(Outbound::getQuantity).sum();
 
         result.put("inboundTotal", inboundTotal);
         result.put("outboundTotal", outboundTotal);
+        return result;
+    }
 
+    @Override
+    public List<Map<String, Object>> getCategoryShare() {
+        return statisticsMapper.stockByCategory();
+    }
+
+    @Override
+    public Map<String, Object> getTrend30d() {
+        Map<String, Object> result = new HashMap<>();
+        result.put("inbound", statisticsMapper.inboundTrend30d());
+        result.put("outbound", statisticsMapper.outboundTrend30d());
         return result;
     }
 }

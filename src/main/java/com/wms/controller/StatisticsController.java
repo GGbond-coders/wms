@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -18,13 +19,22 @@ public class StatisticsController {
 
     @GetMapping("/stock")
     public ResultVO<Map<String, Object>> getStockStatistics() {
-        Map<String, Object> data = statisticsService.getStockStatistics();
-        return ResultVO.success(data);
+        return ResultVO.success(statisticsService.getStockStatistics());
     }
 
     @GetMapping("/io")
     public ResultVO<Map<String, Object>> getIOStatistics() {
-        Map<String, Object> data = statisticsService.getIOStatistics();
-        return ResultVO.success(data);
+        return ResultVO.success(statisticsService.getIOStatistics());
+    }
+
+    @GetMapping("/category-share")
+    public ResultVO<List<Map<String, Object>>> getCategoryShare() {
+        return ResultVO.success(statisticsService.getCategoryShare());
+    }
+
+    @GetMapping("/trend-30d")
+    public ResultVO<Map<String, Object>> getTrend30d() {
+        return ResultVO.success(statisticsService.getTrend30d());
     }
 }
+

@@ -6,6 +6,7 @@ import com.wms.mapper.GoodsMapper;
 import com.wms.mapper.StockMapper;
 import com.wms.pojo.Goods;
 import com.wms.pojo.Stock;
+import com.wms.service.AuditLogService;
 import com.wms.service.StockService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,9 @@ public class StockServiceImpl implements StockService {
 
     @Autowired
     private GoodsMapper goodsMapper;
+
+    @Autowired
+    private AuditLogService auditLogService;
 
     @Override
     public List<Stock> getStockList(String goodsName, Boolean lowStock) {
@@ -70,6 +74,12 @@ public class StockServiceImpl implements StockService {
         UpdateWrapper<Stock> wrapper = new UpdateWrapper<>();
         wrapper.eq("goods_id", goodsId);
         wrapper.set("safe_stock", safeStock);
-        return stockMapper.update(null, wrapper) > 0;
+        boolean ok = stockMapper.update(null, wrapper) > 0;
+        if (ok) {
+            Goods goods = goodsMapper.selectById(goodsId);
+            String name = goods != null ? goods.getName() : "";
+            auditLogService.log("STOCK_SAFE_SET", "set safe stock goodsId=" + goodsId + ", name=" + name + ", safeStock=" + safeStock);
+        }
+        return ok;
     }
 }

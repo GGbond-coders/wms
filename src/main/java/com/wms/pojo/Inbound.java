@@ -14,6 +14,7 @@ public class Inbound {
     private Long id;
     private Long goodsId;
     private Integer quantity;
-    private String operator;
+    private Long operatorId;
     private LocalDateTime createTime;
 }
+

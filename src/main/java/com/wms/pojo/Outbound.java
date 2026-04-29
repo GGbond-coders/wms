@@ -14,6 +14,8 @@ public class Outbound {
     private Long id;
     private Long goodsId;
     private Integer quantity;
+    private Long operatorId;
     private String receiver;
     private LocalDateTime createTime;
 }
+

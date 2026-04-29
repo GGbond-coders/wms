@@ -4,8 +4,11 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wms.mapper.GoodsMapper;
 import com.wms.mapper.InboundMapper;
+import com.wms.mapper.UserMapper;
 import com.wms.pojo.Goods;
 import com.wms.pojo.Inbound;
+import com.wms.pojo.User;
+import com.wms.service.AuditLogService;
 import com.wms.service.InboundService;
 import com.wms.service.StockService;
 import com.wms.vo.PageVO;
@@ -27,11 +30,16 @@ public class InboundServiceImpl implements InboundService {
     @Autowired
     private StockService stockService;
 
+    @Autowired
+    private UserMapper userMapper;
+
+    @Autowired
+    private AuditLogService auditLogService;
+
     @Override
     public PageVO<Inbound> getInboundList(String goodsName, Integer page, Integer pageSize) {
         QueryWrapper<Inbound> wrapper = new QueryWrapper<>();
         if (goodsName != null && !goodsName.isEmpty()) {
-            // 通过商品名称找到商品ID
             QueryWrapper<Goods> goodsWrapper = new QueryWrapper<>();
             goodsWrapper.like("name", goodsName);
             List<Goods> goodsList = goodsMapper.selectList(goodsWrapper);
@@ -41,6 +49,7 @@ public class InboundServiceImpl implements InboundService {
             }
         }
         wrapper.orderByDesc("create_time");
+
         Page<Inbound> pageResult = inboundMapper.selectPage(new Page<>(page, pageSize), wrapper);
         PageVO<Inbound> pageVO = new PageVO<>();
         pageVO.setTotal(pageResult.getTotal());
@@ -50,22 +59,25 @@ public class InboundServiceImpl implements InboundService {
 
     @Override
     @Transactional
-    public boolean addInbound(Long goodsId, Integer quantity, String operator) {
-        // 创建入库记录
+    public boolean addInbound(Long goodsId, Integer quantity, Long operatorId) {
+        User operator = userMapper.selectById(operatorId);
+        if (operator == null) {
+            return false;
+        }
         Inbound inbound = new Inbound();
         inbound.setGoodsId(goodsId);
         inbound.setQuantity(quantity);
-        inbound.setOperator(operator);
+        inbound.setOperatorId(operatorId);
         int result = inboundMapper.insert(inbound);
 
-        // 更新库存
         boolean stockResult = stockService.updateStock(goodsId, quantity);
-
-        // 记录操作日志
-        // Goods goods = goodsMapper.selectById(goodsId);
-        // String content = "入库商品: " + (goods != null ? goods.getName() : "未知") + ", 数量: " + quantity;
-        // operationLogService.addLog(operator, "入库", content);
-
-        return result > 0 && stockResult;
+        boolean ok = result > 0 && stockResult;
+        if (ok) {
+            Goods goods = goodsMapper.selectById(goodsId);
+            String name = goods != null ? goods.getName() : "";
+            auditLogService.log("INBOUND_CREATE",
+                    "inbound goodsId=" + goodsId + ", name=" + name + ", qty=" + quantity + ", operatorId=" + operatorId);
+        }
+        return ok;
     }
 }

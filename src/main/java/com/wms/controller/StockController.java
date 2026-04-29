@@ -4,7 +4,11 @@ import com.wms.pojo.Stock;
 import com.wms.service.StockService;
 import com.wms.vo.ResultVO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -23,11 +27,10 @@ public class StockController {
         return ResultVO.success(stocks);
     }
 
-    @PostMapping("/update")
-    public ResultVO<Void> updateStock(@RequestParam Long goodsId, @RequestParam Integer changeNum) {
-        boolean result = stockService.updateStock(goodsId, changeNum);
-        return result ? ResultVO.success() : ResultVO.error("更新库存失败");
-    }
+    // Business rule: stock quantity must only change via inbound/outbound
+    // Keep endpoint intentionally disabled to avoid direct modification.
+    // (Inbound/Outbound will call StockService.updateStock internally.)
+    // Previously exposed POST /stock/update has been removed.
 
     @PutMapping("/safe")
     public ResultVO<Void> setSafeStock(@RequestParam Long goodsId, @RequestParam Integer safeStock) {
@@ -35,3 +38,4 @@ public class StockController {
         return result ? ResultVO.success() : ResultVO.error("设置安全库存失败");
     }
 }
+
